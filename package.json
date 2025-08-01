@@ -65,7 +65,7 @@
     "ignore": "^7.0.5",
     "lucide-react": "^0.525.0",
     "multer": "^2.0.2",
-    "node-fetch": "^2.7.0",
+    "node-fetch": "^3.3.2",
     "pino": "^8.17.1",
     "prism-react-renderer": "^2.4.1",
     "prismjs": "^1.30.0",
