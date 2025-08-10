@@ -1,0 +1,35 @@
+# Build outputs
+dist/
+build/
+coverage/
+.next/
+.cache/
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test
+tests/__mocks__/claude
+
+# Generated files
+*.min.js
+*.min.css
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Documentation
+*.md
+LICENSE

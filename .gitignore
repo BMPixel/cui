@@ -102,3 +102,7 @@ jspm_packages/
 
 # Git worktrees
 cc-worktrees/
+
+# Generated podcast files
+public/podcasts/*
+!public/podcasts/.gitkeep
