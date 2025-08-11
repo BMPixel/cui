@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.70",
-    "@anthropic-ai/sdk": "^0.54.0",
+    "@anthropic-ai/sdk": "^0.59.0",
     "@google/genai": "^1.11.0",
     "@modelcontextprotocol/sdk": "^1.17.0",
     "@musistudio/llms": "^1.0.19",
