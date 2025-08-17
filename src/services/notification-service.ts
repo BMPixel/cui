@@ -57,7 +57,12 @@ export class NotificationService {
    */
   private async getNtfyUrl(): Promise<string> {
     const config = this.configService.getConfig();
-    return config.interface.notifications?.ntfyUrl || 'https://ntfy.sh';
+    return config.interface.notifications?.ntfy?.url || 'https://ntfy.sh';
+  }
+  
+  private async isNtfyEnabled(): Promise<boolean> {
+    const config = this.configService.getConfig();
+    return config.interface.notifications?.ntfy?.enabled ?? false;
   }
 
   /**
@@ -90,8 +95,18 @@ export class NotificationService {
         permissionRequestId: request.id
       };
 
-      // Send via ntfy
-      await this.sendNotification(ntfyUrl, topic, notification);
+      // Send via ntfy if enabled (best-effort, don't fail the whole operation)
+      if (await this.isNtfyEnabled()) {
+        try {
+          await this.sendNotification(ntfyUrl, topic, notification);
+        } catch (ntfyError) {
+          this.logger.warn('Ntfy notification failed (non-fatal)', { 
+            error: (ntfyError as Error)?.message,
+            url: ntfyUrl,
+            topic 
+          });
+        }
+      }
 
       // Also broadcast via native web push (best-effort)
       try {
@@ -152,8 +167,18 @@ export class NotificationService {
         streamingId
       };
 
-      // Send via ntfy
-      await this.sendNotification(ntfyUrl, topic, notification);
+      // Send via ntfy if enabled (best-effort, don't fail the whole operation)
+      if (await this.isNtfyEnabled()) {
+        try {
+          await this.sendNotification(ntfyUrl, topic, notification);
+        } catch (ntfyError) {
+          this.logger.warn('Ntfy notification failed (non-fatal)', { 
+            error: (ntfyError as Error)?.message,
+            url: ntfyUrl,
+            topic 
+          });
+        }
+      }
 
       // Also broadcast via native web push (best-effort)
       try {
@@ -210,14 +235,22 @@ export class NotificationService {
       headers['X-CUI-PermissionRequestId'] = notification.permissionRequestId;
     }
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: notification.message
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: notification.message,
+        signal: controller.signal
+      });
 
-    if (!response.ok) {
-      throw new Error(`Ntfy returned ${response.status}: ${await response.text()}`);
+      if (!response.ok) {
+        throw new Error(`Ntfy returned ${response.status}: ${await response.text()}`);
+      }
+    } finally {
+      clearTimeout(timeout);
     }
   }
 }

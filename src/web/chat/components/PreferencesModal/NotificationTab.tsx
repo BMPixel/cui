@@ -150,7 +150,24 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
 
       {/* Ntfy Section */}
       <div className="py-4 border-b border-neutral-200 dark:border-neutral-800">
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Ntfy</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Ntfy</h3>
+          <Switch
+            checked={prefs.notifications?.ntfy?.enabled || false}
+            onCheckedChange={(checked) => onUpdate({
+              notifications: {
+                ...prefs.notifications,
+                enabled: prefs.notifications?.enabled || false,
+                ntfy: {
+                  ...prefs.notifications?.ntfy,
+                  enabled: checked
+                }
+              }
+            })}
+            disabled={!prefs.notifications?.enabled}
+            aria-label="Toggle ntfy notifications"
+          />
+        </div>
         <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
           Ntfy works out of the box but opens notifications in the ntfy app. To receive push notifications, subscribe to the following <a href="https://ntfy.sh/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">ntfy topic</a>:
         </p>
@@ -171,15 +188,20 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
               id="ntfy-url"
               type="url"
               className="bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 focus:border-blue-500 dark:focus:border-blue-400"
-              value={prefs.notifications?.ntfyUrl || ''}
+              value={prefs.notifications?.ntfy?.url || ''}
               placeholder="https://ntfy.sh"
               onChange={(e) => onUpdate({
                 notifications: {
                   ...prefs.notifications,
                   enabled: prefs.notifications?.enabled || false,
-                  ntfyUrl: e.target.value || undefined
+                  ntfy: {
+                    ...prefs.notifications?.ntfy,
+                    enabled: prefs.notifications?.ntfy?.enabled || false,
+                    url: e.target.value || undefined
+                  }
                 }
               })}
+              disabled={!prefs.notifications?.enabled || !prefs.notifications?.ntfy?.enabled}
               aria-label="Ntfy server URL"
             />
           </div>
@@ -188,7 +210,24 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
 
       {/* Web Push Section */}
       <div className="py-4">
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Web Push</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Web Push</h3>
+          <Switch
+            checked={prefs.notifications?.webPush?.enabled || false}
+            onCheckedChange={(checked) => onUpdate({
+              notifications: {
+                ...prefs.notifications,
+                enabled: prefs.notifications?.enabled || false,
+                webPush: {
+                  ...prefs.notifications?.webPush,
+                  enabled: checked
+                }
+              }
+            })}
+            disabled={!prefs.notifications?.enabled}
+            aria-label="Toggle web push notifications"
+          />
+        </div>
         <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
           Web Push requires HTTPS hosting. See setup instructions at{' '}
           <a 
@@ -204,7 +243,7 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
         <div className="flex gap-3 mb-4">
           <Button
             onClick={handleWebPushToggle}
-            disabled={webPushLoading || !prefs.notifications?.enabled}
+            disabled={webPushLoading || !prefs.notifications?.enabled || !prefs.notifications?.webPush?.enabled}
             variant="outline"
             className="flex items-center gap-2"
           >
@@ -228,7 +267,7 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
 
           <Button
             onClick={handleSendTest}
-            disabled={!webPushSubscription || !prefs.notifications?.enabled}
+            disabled={!webPushSubscription || !prefs.notifications?.enabled || !prefs.notifications?.webPush?.enabled}
             variant="outline"
             className="flex items-center gap-2"
           >

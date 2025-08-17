@@ -135,11 +135,26 @@ export class ConfigService {
         throw new Error('Invalid JSON in configuration file');
       }
 
+      // Migrate legacy ntfyUrl to new structure
+      let migrated = false;
+      if (fileConfig.interface?.notifications && 'ntfyUrl' in fileConfig.interface.notifications) {
+        const notifications = fileConfig.interface.notifications as any;
+        if (!notifications.ntfy) {
+          notifications.ntfy = {
+            enabled: false, // Default to false as requested
+            url: notifications.ntfyUrl
+          };
+        }
+        delete notifications.ntfyUrl;
+        migrated = true;
+        this.logger.info('Migrated legacy ntfyUrl to new ntfy configuration structure');
+      }
+
       // Validate provided fields (strict for provided keys, allow missing)
       this.validateProvidedFields(fileConfig);
 
       // Merge with defaults for missing sections while preserving all existing fields (e.g., router)
-      let updated = false;
+      let updated = migrated;
       const merged: CUIConfig = {
         // Start with defaults
         ...DEFAULT_CONFIG,
@@ -318,8 +333,17 @@ export class ConfigService {
       if (n && typeof n.enabled !== 'boolean') {
         throw new Error('Invalid config: interface.notifications.enabled must be a boolean');
       }
-      if (n && n.ntfyUrl !== undefined && typeof n.ntfyUrl !== 'string') {
-        throw new Error('Invalid config: interface.notifications.ntfyUrl must be a string');
+      // Validate ntfy settings
+      if (n && n.ntfy !== undefined) {
+        if (typeof n.ntfy !== 'object' || n.ntfy === null) {
+          throw new Error('Invalid config: interface.notifications.ntfy must be an object');
+        }
+        if (n.ntfy.enabled !== undefined && typeof n.ntfy.enabled !== 'boolean') {
+          throw new Error('Invalid config: interface.notifications.ntfy.enabled must be a boolean');
+        }
+        if (n.ntfy.url !== undefined && typeof n.ntfy.url !== 'string') {
+          throw new Error('Invalid config: interface.notifications.ntfy.url must be a string');
+        }
       }
     }
   }

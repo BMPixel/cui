@@ -27,8 +27,12 @@ export interface InterfaceConfig {
   language: string;
   notifications?: {
     enabled: boolean;
-    ntfyUrl?: string;
+    ntfy?: {
+      enabled: boolean;
+      url?: string;
+    };
     webPush?: {
+      enabled?: boolean;
       subject?: string; // e.g. mailto:you@example.com
       vapidPublicKey?: string;
       vapidPrivateKey?: string;

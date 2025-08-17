@@ -160,8 +160,10 @@ export class WebPushService {
   }
 
   getEnabled(): boolean {
-    const enabled = this.configService.getConfig().interface.notifications?.enabled ?? false;
-    return enabled;
+    const notifications = this.configService.getConfig().interface.notifications;
+    const globalEnabled = notifications?.enabled ?? false;
+    const webPushEnabled = notifications?.webPush?.enabled ?? true; // Default to true for backward compatibility
+    return globalEnabled && webPushEnabled;
   }
 
   getSubscriptionCount(): number {
@@ -203,15 +205,19 @@ export class WebPushService {
           await webpush.sendNotification(sub, JSON.stringify(payload), { TTL: 60 });
           this.upsertSeenStmt.run(new Date().toISOString(), 0, row.endpoint);
           sent += 1;
-        } catch (_err: unknown) {
+        } catch (err: unknown) {
           failed += 1;
           // 410 Gone or 404 Not Found => expire subscription
-          const status = undefined;
+          const status = (err as any)?.statusCode || (err as any)?.response?.statusCode;
           if (status === 404 || status === 410) {
             this.upsertSeenStmt.run(new Date().toISOString(), 1, row.endpoint);
             this.logger.info('Expired web push subscription removed', { endpoint: row.endpoint, status });
           } else {
-            this.logger.error('Failed sending web push notification', { endpoint: row.endpoint, statusCode: status });
+            this.logger.error('Failed sending web push notification', { 
+              endpoint: row.endpoint, 
+              statusCode: status,
+              error: err instanceof Error ? err.message : String(err)
+            });
           }
         }
       })

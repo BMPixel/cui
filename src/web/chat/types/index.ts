@@ -90,7 +90,13 @@ export interface Preferences {
   language: string;
   notifications?: {
     enabled: boolean;
-    ntfyUrl?: string;
+    ntfy?: {
+      enabled: boolean;
+      url?: string;
+    };
+    webPush?: {
+      enabled?: boolean;
+    };
   };
 }
 
